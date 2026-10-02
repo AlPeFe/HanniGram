@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="assets/alpegram-mascot.png" alt="AlpeGram mascot: a claymotion-style monitor character wearing headphones, heart-shaped blue eyes, and a blue bunny clip acting as the circular logo" width="220" />
+  <br />
+  <em>AlpeGram the monitor — always listening, always remembering.</em>
+</p>
+
 # AlpeGram
 
-Persistent project memory for AI coding agents. A **.NET 10** engine (SQLite + FTS5, HTTP API, CLI) that lives as an **independent module** and integrates **natively** with [Pi](https://github.com/earendil-works/pi) — no MCP.
+Persistent project memory for AI coding agents. A **.NET 10** engine (SQLite + FTS5, HTTP daemon, CLI) that lives as an **independent module** and integrates **natively** with [Pi](https://github.com/alexlocal-works/pi) — no MCP.
 
 Inspired by [engram](https://github.com/Gentleman-Programming/engram), built to be your own: adapt it freely, run it standalone, or plug it into your Pi-based harness.
 
