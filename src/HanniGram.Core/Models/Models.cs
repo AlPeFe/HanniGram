@@ -1,4 +1,4 @@
-namespace AlpeGram.Core.Models;
+namespace HanniGram.Core.Models;
 
 /// <summary>
 /// A project that owns a memory namespace. Resolved from a working directory
@@ -14,7 +14,7 @@ public sealed class Project
 }
 
 /// <summary>
-/// A durable, structured memory observation. The core unit of AlpeGram memory.
+/// A durable, structured memory observation. The core unit of HanniGram memory.
 /// Mirrors engram's What/Why/Where/Learned shape.
 /// </summary>
 public sealed class Observation

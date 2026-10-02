@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HanniGram.Cli/HanniGram.Cli.csproj" />
+    <Project Path="src/HanniGram.Core/HanniGram.Core.csproj" />
+    <Project Path="src/HanniGram.Server/HanniGram.Server.csproj" />
+  </Folder>
+</Solution>

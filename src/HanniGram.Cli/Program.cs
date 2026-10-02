@@ -1,19 +1,19 @@
-﻿using AlpeGram.Core.Store;
+﻿using HanniGram.Core.Store;
 
-// AlpeGram CLI — use the engine standalone, without the daemon.
+// HanniGram CLI — use the engine standalone, without the daemon.
 // Usage:
-//   alpegram project [cwd]                 resolve project for a cwd
-//   alpegram save <title> [--content] [--what] [--why] [--where] [--learned] [--topic] [--type] [--project] [--cwd]
-//   alpegram search <query> [--limit] [--project] [--cwd]
-//   alpegram list [--limit] [--project] [--cwd]
-//   alpegram topics [--project] [--cwd]
-//   alpegram session-start [--id] [--project] [--cwd]
-//   alpegram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
-//   alpegram projects
+//   hannigram project [cwd]                 resolve project for a cwd
+//   hannigram save <title> [--content] [--what] [--why] [--where] [--learned] [--topic] [--type] [--project] [--cwd]
+//   hannigram search <query> [--limit] [--project] [--cwd]
+//   hannigram list [--limit] [--project] [--cwd]
+//   hannigram topics [--project] [--cwd]
+//   hannigram session-start [--id] [--project] [--cwd]
+//   hannigram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
+//   hannigram projects
 
 var dbPath = Env("ALPEGRAM_DB") ?? Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".alpegram", "alpegram.db");
-using var store = new AlpeGramStore(dbPath);
+    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".hannigram", "hannigram.db");
+using var store = new HanniGramStore(dbPath);
 
 var cliArgs = Args();
 if (cliArgs.Length == 0) { Help(); return; }
@@ -117,17 +117,17 @@ static int IntFlag(string[] a, string name, int def)
 static string Truncate(string s, int n) => s.Length <= n ? s : s[..n] + "…";
 
 static void Help() => Console.WriteLine("""
-    AlpeGram — persistent project memory for AI coding agents.
+    HanniGram — persistent project memory for AI coding agents.
 
     Usage:
-      alpegram project [cwd]
-      alpegram save <title> [--content] [--what] [--why] [--where] [--learned] [--topic] [--type] [--project] [--cwd]
-      alpegram search <query> [--limit] [--project] [--cwd]
-      alpegram list [--limit] [--project] [--cwd]
-      alpegram topics [--project] [--cwd]
-      alpegram session-start [--id] [--project] [--cwd]
-      alpegram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
-      alpegram projects
+      hannigram project [cwd]
+      hannigram save <title> [--content] [--what] [--why] [--where] [--learned] [--topic] [--type] [--project] [--cwd]
+      hannigram search <query> [--limit] [--project] [--cwd]
+      hannigram list [--limit] [--project] [--cwd]
+      hannigram topics [--project] [--cwd]
+      hannigram session-start [--id] [--project] [--cwd]
+      hannigram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
+      hannigram projects
 
     Env: ALPEGRAM_DB (db path), ALPEGRAM_CWD (default cwd)
     """);

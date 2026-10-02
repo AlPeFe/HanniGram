@@ -1,4 +1,4 @@
-namespace AlpeGram.Core.Store;
+namespace HanniGram.Core.Store;
 
 /// <summary>
 /// Resolves a working directory to a stable project name, mirroring engram's

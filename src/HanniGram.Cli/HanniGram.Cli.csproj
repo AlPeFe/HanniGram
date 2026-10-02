@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\AlpeGram.Core\AlpeGram.Core.csproj" />
+    <ProjectReference Include="..\HanniGram.Core\HanniGram.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

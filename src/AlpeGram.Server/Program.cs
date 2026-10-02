@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AlpeGram.Core.Models;
-using AlpeGram.Core.Store;
+using HanniGram.Core.Models;
+using HanniGram.Core.Store;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +10,9 @@ var urls = Environment.GetEnvironmentVariable("ALPEGRAM_URLS") ?? "http://127.0.
 builder.WebHost.UseUrls(urls);
 
 var dbPath = Environment.GetEnvironmentVariable("ALPEGRAM_DB") ?? Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".alpegram", "alpegram.db");
+    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".hannigram", "hannigram.db");
 
-var store = new AlpeGramStore(dbPath);
+var store = new HanniGramStore(dbPath);
 builder.Services.AddSingleton(store);
 
 var app = builder.Build();

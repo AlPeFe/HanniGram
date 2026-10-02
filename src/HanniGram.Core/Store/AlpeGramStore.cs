@@ -1,23 +1,23 @@
-using AlpeGram.Core.Models;
+using HanniGram.Core.Models;
 using Microsoft.Data.Sqlite;
 
-namespace AlpeGram.Core.Store;
+namespace HanniGram.Core.Store;
 
 /// <summary>
-/// SQLite + FTS5 store for AlpeGram. One global database file (default
-/// ~/.alpegram/alpegram.db) holding all projects, each with its own memory
+/// SQLite + FTS5 store for HanniGram. One global database file (default
+/// ~/.hannigram/hannigram.db) holding all projects, each with its own memory
 /// namespace. FTS5 powers full-text search over observations.
 /// </summary>
-public sealed class AlpeGramStore : IDisposable
+public sealed class HanniGramStore : IDisposable
 {
     private readonly string _dbPath;
     private readonly SqliteConnection _conn;
 
-    public AlpeGramStore(string? dbPath = null)
+    public HanniGramStore(string? dbPath = null)
     {
         _dbPath = dbPath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".alpegram", "alpegram.db");
+            ".hannigram", "hannigram.db");
         Directory.CreateDirectory(Path.GetDirectoryName(_dbPath)!);
 
         var cs = new SqliteConnectionStringBuilder { DataSource = _dbPath, Mode = SqliteOpenMode.ReadWriteCreate }.ToString();
