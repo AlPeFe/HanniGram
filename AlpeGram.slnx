@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AlpeGram.Cli/AlpeGram.Cli.csproj" />
+    <Project Path="src/AlpeGram.Core/AlpeGram.Core.csproj" />
+    <Project Path="src/AlpeGram.Server/AlpeGram.Server.csproj" />
+  </Folder>
+</Solution>

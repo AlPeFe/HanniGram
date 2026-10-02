@@ -1,0 +1,6 @@
+bin/
+obj/
+*.user
+.vs/
+pi-extension/node_modules/
+pi-extension/package-lock.json
