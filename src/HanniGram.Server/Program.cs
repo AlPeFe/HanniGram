@@ -63,6 +63,12 @@ app.MapGet("/api/observations/{id:long}", (long id) =>
     return obs is null ? Results.NotFound() : Results.Json(obs, json);
 });
 
+app.MapDelete("/api/observations/{id:long}", (long id) =>
+{
+    var deleted = store.DeleteObservation(id);
+    return deleted ? Results.Ok(new { deleted = true, id }) : Results.NotFound();
+});
+
 app.MapGet("/api/observations", (HttpRequest req, int limit = 50) =>
 {
     var p = ResolveProject(req);

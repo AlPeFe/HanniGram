@@ -88,6 +88,7 @@ export default function (pi: ExtensionAPI) {
 					body: JSON.stringify(params),
 				},
 			);
+			ctx.ui.notify(`✓ Memoria guardada #${obs.id}: ${obs.title}${obs.topicKey ? ` [${obs.topicKey}]` : ""}`, "info");
 			return {
 				content: [
 					{
@@ -97,6 +98,34 @@ export default function (pi: ExtensionAPI) {
 				],
 				details: obs,
 			};
+		},
+	});
+
+	// ------------------------------------------------------------------
+	// mem_delete — delete an observation
+	// ------------------------------------------------------------------
+	pi.registerTool({
+		name: "mem_delete",
+		label: "AlpeGram: delete memory",
+		description:
+			"Delete a memory observation by id from the current project. Use to remove stale, wrong, or superseded observations. Returns whether it was deleted.",
+		parameters: Type.Object({
+			id: Type.Number({ description: "Observation id to delete" }),
+		}),
+		execute: async (_id, params, _signal, _onUpdate, ctx: ExtensionToolContext) => {
+			const res = await fetch(`${baseUrl()}/api/observations/${params.id}?${scope(ctx.cwd)}`, {
+				method: "DELETE",
+			});
+			if (res.status === 404) {
+				ctx.ui.notify(`✗ Memoria #${params.id} no encontrada`, "warning");
+				return { content: [{ type: "text", text: `Observation #${params.id} not found.` }], details: { deleted: false } };
+			}
+			if (!res.ok) {
+				const body = await res.text().catch(() => "");
+				throw new Error(`AlpeGram ${res.status}: ${body || res.statusText}`);
+			}
+			ctx.ui.notify(`✓ Memoria eliminada #${params.id}`, "info");
+			return { content: [{ type: "text", text: `Deleted observation #${params.id}.` }], details: { deleted: true, id: params.id } };
 		},
 	});
 
@@ -237,6 +266,7 @@ export default function (pi: ExtensionAPI) {
 					nextSteps: params.nextSteps,
 				}),
 			});
+			ctx.ui.notify(`✓ Resumen de sesión guardado (${sessionId})`, "info");
 			return {
 				content: [{ type: "text", text: `Session ${sessionId} summary saved.` }],
 				details: { sessionId },

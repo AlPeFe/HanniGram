@@ -146,14 +146,31 @@ public sealed class HanniGramStore : IDisposable
         return GetObservation(id)!;
     }
 
-    public Observation? GetObservation(long id)
-    {
-        using var cmd = _conn.CreateCommand();
-        cmd.CommandText = "SELECT id, project_id, title, content, what, why, where_, learned, topic_key, type, created_at_utc, updated_at_utc FROM observations WHERE id = $id";
-        cmd.Parameters.AddWithValue("$id", id);
-        using var r = cmd.ExecuteReader();
-        return r.Read() ? ReadObservation(r) : null;
-    }
+	public Observation? GetObservation(long id)
+	{
+		using var cmd = _conn.CreateCommand();
+		cmd.CommandText = "SELECT id, project_id, title, content, what, why, where_, learned, topic_key, type, created_at_utc, updated_at_utc FROM observations WHERE id = $id";
+		cmd.Parameters.AddWithValue("$id", id);
+		using var r = cmd.ExecuteReader();
+		return r.Read() ? ReadObservation(r) : null;
+	}
+
+	/// <summary>Delete an observation and its FTS row. Returns true if it existed.</summary>
+	public bool DeleteObservation(long id)
+	{
+		using var cmd = _conn.CreateCommand();
+		cmd.CommandText = "DELETE FROM observations WHERE id = $id";
+		cmd.Parameters.AddWithValue("$id", id);
+		var deleted = cmd.ExecuteNonQuery() > 0;
+		if (deleted)
+		{
+			using var fts = _conn.CreateCommand();
+			fts.CommandText = "DELETE FROM observations_fts WHERE rowid = $id";
+			fts.Parameters.AddWithValue("$id", id);
+			fts.ExecuteNonQuery();
+		}
+		return deleted;
+	}
 
     public IReadOnlyList<Observation> ListObservations(long projectId, int limit = 50)
     {
