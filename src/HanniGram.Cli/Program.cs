@@ -3,6 +3,7 @@
 // HanniGram CLI — use the engine standalone, without the daemon.
 // Usage:
 //   hannigram project [cwd]                 resolve project for a cwd
+//   hannigram init [--cwd]                  init project memory (BD + .hannigram/memory.md local export)
 //   hannigram save <title> [--content] [--what] [--why] [--where] [--learned] [--topic] [--type] [--project] [--cwd]
 //   hannigram search <query> [--limit] [--project] [--cwd]
 //   hannigram list [--limit] [--project] [--cwd]
@@ -31,6 +32,38 @@ try
         case "project":
             Console.WriteLine(resolvedProject);
             break;
+
+        case "init":
+        {
+            // Inicializa la memoria del proyecto: crea el proyecto en la BD y
+            // escribe la memoria local (fichero) para que otros harness puedan
+            // leer las decisiones sin HanniGram.
+            var p = store.GetOrCreateProject(resolvedProject, cwd);
+            var dir = Path.Combine(cwd, ".hannigram");
+            Directory.CreateDirectory(dir);
+            var memoryPath = Path.Combine(dir, "memory.md");
+            var obs = store.ListObservations(p.Id, 500);
+            var lines = new List<string>
+            {
+                $"# Memoria del proyecto — {resolvedProject}",
+                $"Generado por HanniGram ({DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC).",
+                $"BD global: {dbPath}",
+                $"Observaciones: {obs.Count}",
+                "",
+                "> HanniGram: memoria persistente con búsqueda FTS5 trigram (tolerante a typos).",
+                "> Este fichero es una vista exportada para herramientas sin HanniGram; la fuente de verdad es la BD.",
+                "",
+            };
+            foreach (var o in obs)
+            {
+                lines.Add($"## #{o.Id} {o.Title} {(o.TopicKey is null ? "" : $"`{o.TopicKey}`")}");
+                if (!string.IsNullOrWhiteSpace(o.Content)) lines.Add(o.Content);
+                lines.Add("");
+            }
+            File.WriteAllText(memoryPath, string.Join("\n", lines));
+            Console.WriteLine($"init: proyecto '{p.Name}' en BD + memoria local {memoryPath} ({obs.Count} observaciones)");
+            break;
+        }
 
         case "save":
         {
