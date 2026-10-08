@@ -58,8 +58,13 @@ public sealed class HanniGramStore : IDisposable
             CREATE INDEX IF NOT EXISTS idx_obs_project ON observations(project_id);
             CREATE INDEX IF NOT EXISTS idx_obs_topic ON observations(project_id, topic_key);
             CREATE INDEX IF NOT EXISTS idx_sess_project ON sessions(project_id);
-            CREATE VIRTUAL TABLE IF NOT EXISTS observations_fts USING fts5(
+            -- FTS5 with trigram tokenizer: typo-tolerant and substring/CJK search.
+            -- Drop+recreate forces the new tokenizer on existing DBs (external-content
+            -- safe: observations rows are untouched; 'rebuild' below re-indexes them).
+            DROP TABLE IF EXISTS observations_fts;
+            CREATE VIRTUAL TABLE observations_fts USING fts5(
                 title, content, topic_key, type,
+                tokenize='trigram',
                 content='observations', content_rowid='id'
             );
         ");
@@ -198,6 +203,20 @@ public sealed class HanniGramStore : IDisposable
 
     public IReadOnlyList<SearchHit> Search(long projectId, string query, int limit = 10)
     {
+        var hits = SearchCore(projectId, query, limit);
+        // Trigram tokenizer matches substrings, not fuzzy typos. When a strict
+        // AND match finds nothing, retry with OR of the query's trigrams so a
+        // typo'd word (1-3 chars off in a long word) still matches documents
+        // sharing enough trigrams, ranked by bm25.
+        if (hits.Count == 0 && query.Where(char.IsLetterOrDigit).Count() >= 6)
+        {
+            hits = SearchCore(projectId, FtsTrigramFallback(query), limit);
+        }
+        return hits;
+    }
+
+    private List<SearchHit> SearchCore(long projectId, string ftsQuery, int limit)
+    {
         var list = new List<SearchHit>();
         using var cmd = _conn.CreateCommand();
         cmd.CommandText = @"
@@ -207,7 +226,7 @@ public sealed class HanniGramStore : IDisposable
             WHERE observations_fts MATCH $q AND o.project_id = $p
             ORDER BY rank
             LIMIT $l;";
-        cmd.Parameters.AddWithValue("$q", FtsQuery(query));
+        cmd.Parameters.AddWithValue("$q", ftsQuery);
         cmd.Parameters.AddWithValue("$p", projectId);
         cmd.Parameters.AddWithValue("$l", limit);
         using var r = cmd.ExecuteReader();
@@ -307,10 +326,32 @@ public sealed class HanniGramStore : IDisposable
     private static string FtsQuery(string raw)
     {
         // Escape FTS5 special chars and AND the terms so multi-word queries
-        // require all terms (closer to a focused search).
+        // require all terms (closer to a focused search). Trigram tokenizer
+        // matches substrings of >=3 chars; drop 1-2-char terms (they would
+        // match nothing / could error) so a typo'd fragment still finds data.
         var terms = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(t => t.Length >= 3)
             .Select(t => "\"" + t.Replace("\"", "\"\"") + "\"");
         return string.Join(" AND ", terms);
+    }
+
+    /// <summary>
+    /// OR of the query's trigrams: enables fuzzy/typo-tolerant matching. With a
+    /// trigram tokenizer, "rozado" and "rosado" share enough trigrams that OR-ing
+    /// them lets bm25 rank the typo'd document. Cap the OR list so query size
+    /// stays bounded (trigram only needs >=3 chars, and we only enter this path
+    /// for queries of >=6 letters).
+    /// </summary>
+    private static string FtsTrigramFallback(string raw)
+    {
+        var grams = new List<string>();
+        var norm = new string(raw.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
+        for (var i = 0; i + 3 <= norm.Length && grams.Count < 40; i++)
+        {
+            var g = norm.Substring(i, 3);
+            if (!grams.Contains(g)) grams.Add(g);
+        }
+        return string.Join(" OR ", grams.Select(g => "\"" + g + "\"").Take(20));
     }
 
     private static string Now() => DateTime.UtcNow.ToString("O");
