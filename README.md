@@ -22,7 +22,9 @@ SQLite + FTS5 (~/.hannigram/hannigram.db)
 
 - **Memoria por proyecto** — resuelve el proyecto desde el directorio de trabajo (git remote cuando está disponible), así cada proyecto tiene su propio espacio de memoria.
 - **Observaciones estructuradas** — What / Why / Where / Learned, con título y tipo buscables.
-- **Búsqueda de texto completo** — SQLite FTS5 sobre las observaciones.
+- **Búsqueda de texto completo** — SQLite FTS5 sobre las observaciones, con **tokenizer trigram**: tolera typos (buscar `rozado` encuentra `rosado`), substrings y CJK. Si el match estricto no da resultados, reintenta con los trigramas de la query (fuzzy) rankeado por bm25.
+- **ADR / decisiones** — las observaciones con `type=adr` y `topic_key=adr/<slug>` son decisiones de arquitectura/convención (p.ej. `adr/ui/palette`). Son la base de "respetar estilos": HanniPI las consulta antes de implementar en zonas cubiertas, sin redefinirlas en cada prompt.
+- **Memoria local exportada** — `hannigram init` crea el proyecto en la BD **y** escribe `.hannigram/memory.md` en el proyecto: una vista markdown de las decisiones, para que cualquier harness (o persona) que solo trabaje con ficheros lea la memoria sin depender del daemon. La BD sigue siendo la fuente de verdad.
 - **Topic keys** — claves estables (`architecture/auth-model`) para mantener el conocimiento evolutivo en un solo lugar.
 - **Sesiones + handoff** — `session_summary` guarda objetivo, descubrimientos y próximos pasos para que la siguiente sesión recupere el contexto.
 
@@ -67,6 +69,7 @@ dotnet run -c Release
 
 ```bash
 hannigram project [cwd]
+hannigram init [--cwd]   # crea el proyecto en la BD + escribe .hannigram/memory.md (memoria local exportada)
 hannigram save <title> [--content] [--what] [--why] [--where] [--learned] [--topic] [--type] [--project] [--cwd]
 hannigram search <query> [--limit] [--project] [--cwd]
 hannigram list [--limit] [--project] [--cwd]
@@ -75,6 +78,27 @@ hannigram session-start [--id] [--project] [--cwd]
 hannigram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
 hannigram projects
 ```
+
+### `hannigram init` — instancia la memoria del proyecto
+
+Crea el proyecto en la BD global **y** escribe `.hannigram/memory.md` en el directorio de trabajo: una vista markdown de las observaciones/ADR del proyecto, para que cualquier harness (o persona) que solo trabaje con ficheros lea las decisiones sin depender del daemon. La BD sigue siendo la fuente de verdad; el fichero es una exportación.
+
+```bash
+cd /ruta/al/proyecto
+hannigram init --cwd .
+# → init: proyecto 'org/repo' en BD + memoria local ./.hannigram/memory.md (N observaciones)
+```
+
+## Filosofía sODD + memoria
+
+HanniGram no se instancia siempre. Siguiendo la filosofía **sODD** (orgánico, no burocrático), la memoria de un proyecto se crea **cuando hace falta**, no por defecto:
+
+- **Manual**: `hannigram init` (o `/hannigram init` en HanniPI) cuando tú decides que el proyecto merece memoria.
+- **Automático (sODD)**: cuando el proyecto es lo bastante grande y se toman decisiones importantes que conviene recordar, el orquestador lo sugiere/activa.
+
+La memoria guarda **contexto combinado y relacionado** — no solo observaciones sueltas: decisiones (ADR), sesiones, y las relaciones entre ellas. Al reabrir un proyecto, HanniPI inyecta un **índice ligero** (número de ADR, temas, última decisión) y recupera la ADR completa **bajo demanda** cuando la tarea la necesita — sin releer todos los ficheros ni gastar tokens de más.
+
+**Respetar estilos/convenciones**: una ADR marcada como convención (p.ej. `adr/ui/palette`) se aplica siempre en las zonas que cubre; si hay duda, el agente pregunta. Así decides el estilo una vez y todas las llamadas lo respetan, sin redefinirlo en cada prompt.
 
 ## Integración con HanniPI (nativa, sin MCP)
 
