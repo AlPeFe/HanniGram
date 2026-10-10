@@ -1,11 +1,11 @@
-// Verification harness: loads the AlpeGram Pi extension with jiti (the same
+// Verification harness: loads the HanniGram Pi extension with jiti (the same
 // loader Pi uses), captures the registered tools via a mock ExtensionAPI, and
 // executes each mem_* tool against the running daemon.
 import { createJiti } from "jiti";
 import { fileURLToPath } from "node:url";
 
 const jiti = createJiti(import.meta.url, { moduleCache: false });
-const factory = await jiti.import("C:/Users/alexlocal/projects/AlpeGram/pi-extension/index.ts", { default: true });
+const factory = await jiti.import(new URL("./index.ts", import.meta.url).href, { default: true });
 
 const tools = new Map();
 const mockPi = {
@@ -17,8 +17,8 @@ const mockPi = {
 await factory(mockPi);
 console.log(`Loaded extension. Registered ${tools.size} tools: ${[...tools.keys()].join(", ")}`);
 
-// Minimal fake ctx with a cwd.
-const ctx = { cwd: "C:/Users/alexlocal/projects/AlpefePI" };
+// Minimal fake ctx with a cwd and a ui.notify stub (tools call it on write).
+const ctx = { cwd: "C:/Users/alexlocal/projects/AlpefePI", ui: { notify: () => {} } };
 
 async function run(name, params) {
 	const t = tools.get(name);
@@ -34,7 +34,7 @@ await run("mem_current_project", {});
 // 2. save
 await run("mem_save", {
 	title: "Verification observation",
-	content: "AlpeGram Pi extension verified end-to-end via jiti harness",
+	content: "HanniGram Pi extension verified end-to-end via jiti harness",
 	what: "Ran verification",
 	why: "Confirm native integration",
 	where: "pi-extension/index.ts",
@@ -50,7 +50,7 @@ await run("mem_context", { limit: 5 });
 await run("mem_suggest_topic_key", {});
 // 6. session summary
 await run("mem_session_summary", {
-	summary: "Verified AlpeGram Pi extension",
+	summary: "Verified HanniGram Pi extension",
 	goal: "Confirm native tooling",
 	nextSteps: "Commit and push",
 	sessionId: "verify-sess",

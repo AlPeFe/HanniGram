@@ -1,8 +1,8 @@
 /**
- * AlpeGram — native Pi extension.
+ * HanniGram — native Pi extension.
  *
- * Registers the mem_* tools that talk to the AlpeGram daemon over HTTP
- * (default http://127.0.0.1:8765). No MCP: the harness consumes AlpeGram
+ * Registers the mem_* tools that talk to the HanniGram daemon over HTTP
+ * (default http://127.0.0.1:8765). No MCP: the harness consumes HanniGram
  * natively as tooling, exactly like any built-in Pi tool.
  *
  * The daemon resolves the project from the session cwd (git remote when
@@ -15,7 +15,7 @@ import { Type } from "typebox";
 const DEFAULT_BASE = "http://127.0.0.1:8765";
 
 function baseUrl(): string {
-	return process.env.ALPEGRAM_URL ?? DEFAULT_BASE;
+	return process.env.HANNIGRAM_URL ?? DEFAULT_BASE;
 }
 
 /** Small HTTP helper. Throws with the daemon's error message on failure. */
@@ -26,7 +26,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 	});
 	if (!res.ok) {
 		const body = await res.text().catch(() => "");
-		throw new Error(`AlpeGram ${res.status}: ${body || res.statusText}`);
+		throw new Error(`HanniGram ${res.status}: ${body || res.statusText}`);
 	}
 	return (await res.json()) as T;
 }
@@ -43,9 +43,9 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_current_project",
-		label: "AlpeGram: current project",
+		label: "HanniGram: current project",
 		description:
-			"Confirm the AlpeGram project resolved for the current working directory (git remote when available). Call this first to orient before reading or writing memory.",
+			"Confirm the HanniGram project resolved for the current working directory (git remote when available). Call this first to orient before reading or writing memory.",
 		parameters: Type.Object({}),
 		execute: async (_id, _params, _signal, _onUpdate, ctx: ExtensionToolContext) => {
 			const p = await api<{ id: number; name: string; rootPath?: string }>(
@@ -63,7 +63,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_save",
-		label: "AlpeGram: save memory",
+		label: "HanniGram: save memory",
 		description:
 			"Save a durable, structured memory observation for the current project. Use for completed bug fixes, decisions, discoveries, config changes, patterns, and durable user constraints. Do NOT capture raw tool output or every conversational turn. Provide a short searchable title and a fitting type.",
 		parameters: Type.Object({
@@ -106,7 +106,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_delete",
-		label: "AlpeGram: delete memory",
+		label: "HanniGram: delete memory",
 		description:
 			"Delete a memory observation by id from the current project. Use to remove stale, wrong, or superseded observations. Returns whether it was deleted.",
 		parameters: Type.Object({
@@ -122,7 +122,7 @@ export default function (pi: ExtensionAPI) {
 			}
 			if (!res.ok) {
 				const body = await res.text().catch(() => "");
-				throw new Error(`AlpeGram ${res.status}: ${body || res.statusText}`);
+				throw new Error(`HanniGram ${res.status}: ${body || res.statusText}`);
 			}
 			ctx.ui.notify(`✓ Memoria eliminada #${params.id}`, "info");
 			return { content: [{ type: "text", text: `Deleted observation #${params.id}.` }], details: { deleted: true, id: params.id } };
@@ -134,7 +134,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_search",
-		label: "AlpeGram: search memory",
+		label: "HanniGram: search memory",
 		description:
 			"Full-text search over the current project's memory (SQLite FTS5). Use before revisiting a decision, bug, convention, or request that may already be known. Results are previews, not the complete record.",
 		parameters: Type.Object({
@@ -160,7 +160,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_context",
-		label: "AlpeGram: recent memory context",
+		label: "HanniGram: recent memory context",
 		description:
 			"Return the most recent observations for the current project. Use at the start of related work to recover relevant history before continuing.",
 		parameters: Type.Object({
@@ -185,7 +185,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_timeline",
-		label: "AlpeGram: memory timeline by topic",
+		label: "HanniGram: memory timeline by topic",
 		description:
 			"Return all observations for a given topic key in the current project, newest first. Use when surrounding session context matters for an evolving topic.",
 		parameters: Type.Object({
@@ -208,7 +208,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_get_observation",
-		label: "AlpeGram: get observation",
+		label: "HanniGram: get observation",
 		description: "Return the full detail of a single observation by id, before relying on it.",
 		parameters: Type.Object({
 			id: Type.Number({ description: "Observation id" }),
@@ -224,7 +224,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_suggest_topic_key",
-		label: "AlpeGram: suggest topic keys",
+		label: "HanniGram: suggest topic keys",
 		description:
 			"List existing topic keys in the current project. Use when unsure of the stable topic_key to reuse for an evolving topic.",
 		parameters: Type.Object({}),
@@ -242,7 +242,7 @@ export default function (pi: ExtensionAPI) {
 	// ------------------------------------------------------------------
 	pi.registerTool({
 		name: "mem_session_summary",
-		label: "AlpeGram: session summary",
+		label: "HanniGram: session summary",
 		description:
 			"Save a session handoff summary for the current project: goal, discoveries, accomplished work, next steps. Call before ending a session so the next session can recover context.",
 		parameters: Type.Object({

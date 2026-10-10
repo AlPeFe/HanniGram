@@ -12,7 +12,7 @@
 //   hannigram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
 //   hannigram projects
 
-var dbPath = Env("ALPEGRAM_DB") ?? Path.Combine(
+var dbPath = Env("HANNIGRAM_DB") ?? Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".hannigram", "hannigram.db");
 using var store = new HanniGramStore(dbPath);
 
@@ -162,5 +162,5 @@ static void Help() => Console.WriteLine("""
       hannigram session-end <id> [--summary] [--goal] [--next] [--project] [--cwd]
       hannigram projects
 
-    Env: ALPEGRAM_DB (db path), ALPEGRAM_CWD (default cwd)
+    Env: HANNIGRAM_DB (db path), HANNIGRAM_CWD (default cwd)
     """);

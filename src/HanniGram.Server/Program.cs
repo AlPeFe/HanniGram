@@ -5,11 +5,11 @@ using HanniGram.Core.Store;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Bind only to loopback by default; override with --urls or ALPEGRAM_URLS.
-var urls = Environment.GetEnvironmentVariable("ALPEGRAM_URLS") ?? "http://127.0.0.1:8765";
+// Bind only to loopback by default; override with --urls or HANNIGRAM_URLS.
+var urls = Environment.GetEnvironmentVariable("HANNIGRAM_URLS") ?? "http://127.0.0.1:8765";
 builder.WebHost.UseUrls(urls);
 
-var dbPath = Environment.GetEnvironmentVariable("ALPEGRAM_DB") ?? Path.Combine(
+var dbPath = Environment.GetEnvironmentVariable("HANNIGRAM_DB") ?? Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".hannigram", "hannigram.db");
 
 var store = new HanniGramStore(dbPath);
@@ -23,13 +23,13 @@ var json = new JsonSerializerOptions(JsonSerializerDefaults.Web)
 };
 
 // Resolve a project from a cwd (or explicit name). Mirrors engram's resolution:
-// explicit project > ENGRAM_PROJECT > cwd detection.
+// explicit project > HANNIGRAM_CWD > cwd detection.
 Project ResolveProject(HttpRequest req)
 {
     var name = req.Query["project"].FirstOrDefault();
     var cwd = req.Query["cwd"].FirstOrDefault();
     if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(cwd))
-        cwd = Environment.GetEnvironmentVariable("ALPEGRAM_CWD") ?? Directory.GetCurrentDirectory();
+        cwd = Environment.GetEnvironmentVariable("HANNIGRAM_CWD") ?? Directory.GetCurrentDirectory();
     if (string.IsNullOrEmpty(name))
         name = ProjectResolver.Resolve(cwd);
     return store.GetOrCreateProject(name, string.IsNullOrEmpty(cwd) ? null : cwd);
