@@ -203,7 +203,7 @@ public sealed class HanniGramStore : IDisposable
 
     public IReadOnlyList<SearchHit> Search(long projectId, string query, int limit = 10)
     {
-        var hits = SearchCore(projectId, query, limit);
+        var hits = SearchCore(projectId, FtsQuery(query), limit);
         // Trigram tokenizer matches substrings, not fuzzy typos. When a strict
         // AND match finds nothing, retry with OR of the query's trigrams so a
         // typo'd word (1-3 chars off in a long word) still matches documents
